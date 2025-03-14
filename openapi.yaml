@@ -1,0 +1,153 @@
+openapi: 3.0.0
+info:
+  title: Payment API
+  description: API for handling payments and webhook registration
+  version: 1.0.0
+  contact:
+    email: oisinmarron15@gmail.com
+
+paths:
+  /api/create-payment:
+    post:
+      summary: Create a payment
+      description: Creates a payment using the provided payment details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentDetailsDto'
+            example:
+              firstName: John
+              lastName: Doe
+              zipCode: 12345
+              cardNumber: 4111111111111111
+      responses:
+        '200':
+          description: Payment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                status: 200
+                message: Payment created successfully
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                status: 400
+                message: First name cannot be blank
+        '500':
+          description: Encryption error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 500
+                message: Issue encrypting a new card number
+
+  /api/register-webhook:
+    post:
+      summary: Register a webhook
+      description: Registers a webhook for receiving notifications.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookDto'
+            example:
+              webhookUrl: https://example.com/webhook
+              webhookType: NEW_PAYMENT
+      responses:
+        '200':
+          description: Webhook registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                status: 200
+                message: Webhook registered successfully
+        '400':
+          description: Invalid input or invalid webhook URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                status: 400
+                message: The provided webhook URL isn't an actual URL
+
+components:
+  schemas:
+    PaymentDetailsDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: First name of the payer
+          example: John
+        lastName:
+          type: string
+          description: Last name of the payer
+          example: Doe
+        zipCode:
+          type: string
+          description: Zip code of the payer
+          example: 12345
+        cardNumber:
+          type: string
+          description: Card number of the payer
+          example: 4111111111111111
+      required:
+        - firstName
+        - lastName
+        - zipCode
+        - cardNumber
+
+    WebhookDto:
+      type: object
+      properties:
+        webhookUrl:
+          type: string
+          description: URL where webhook notifications will be sent
+          example: https://example.com/webhook
+        webhookType:
+          type: string
+          description: Type of webhook
+          enum:
+            - NEW_PAYMENT
+      required:
+        - webhookUrl
+        - webhookType
+
+    ApiResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+          example: 200
+        message:
+          type: string
+          description: Response message
+          example: Payment created successfully
+      required:
+        - status
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message describing the issue
+          example: An unexpected error occurred
+      required:
+        - message
